@@ -1,0 +1,147 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="Browser-based Verilog synthesis using YoWASP (Yosys WebAssembly) running entirely client-side in a Web Worker."
+    />
+    <title>YoWASP Browser Synthesis PoC</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <div class="app">
+      <!-- Header -->
+      <header class="header">
+        <div class="header-brand">
+          <div class="logo-icon">
+            <svg
+              width="28"
+              height="28"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <path d="M6 3v7a6 6 0 0 0 6 6 6 6 0 0 0 6-6V3" />
+              <line x1="4" y1="21" x2="20" y2="21" />
+            </svg>
+          </div>
+          <div>
+            <h1>YoWASP Browser Synthesis</h1>
+            <p class="subtitle">
+              Verilog → WASM → Yosys JSON — entirely client-side
+            </p>
+          </div>
+        </div>
+        <a
+          href="https://github.com/Git-HimanshuRathi/yowasp-browser-synthesis-poc"
+          target="_blank"
+          class="github-link"
+          title="View on GitHub"
+        >
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor">
+            <path
+              d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"
+            />
+          </svg>
+        </a>
+      </header>
+
+      <!-- Main Content -->
+      <main class="main">
+        <!-- Input Panel -->
+        <section class="panel input-panel">
+          <div class="panel-header">
+            <h2>Verilog Input</h2>
+            <div class="controls">
+              <select id="example-select" title="Load example circuit">
+                <option value="half_adder">Half Adder</option>
+                <option value="sr_latch">SR Latch</option>
+                <option value="mux2to1">2:1 Multiplexer</option>
+              </select>
+              <button id="run-btn" title="Run Synthesis (Ctrl+Enter)">
+                <span class="btn-icon">▶</span>
+                <span class="btn-text">Run Synthesis</span>
+              </button>
+            </div>
+          </div>
+          <textarea
+            id="verilog-input"
+            spellcheck="false"
+            autocomplete="off"
+          ></textarea>
+        </section>
+
+        <!-- Output Panel -->
+        <section class="panel output-panel">
+          <div class="panel-header">
+            <h2>Synthesis Result</h2>
+            <div id="timing" class="timing hidden"></div>
+          </div>
+
+          <!-- Status Bar -->
+          <div id="status-bar" class="status-bar hidden">
+            <div class="spinner"></div>
+            <span id="status-text"></span>
+          </div>
+
+          <!-- Error Display -->
+          <div id="error-panel" class="error-panel hidden">
+            <div class="error-header">✗ Synthesis Error</div>
+            <pre id="error-message"></pre>
+          </div>
+
+          <!-- Parsed Summary -->
+          <div id="parsed-summary" class="parsed-summary hidden">
+            <h3>Parsed Summary</h3>
+            <div id="summary-content"></div>
+          </div>
+
+          <!-- Raw JSON -->
+          <div id="raw-json-section" class="raw-json-section hidden">
+            <h3>
+              <span>Raw Yosys JSON</span>
+              <button id="toggle-json" class="toggle-btn">Show</button>
+            </h3>
+            <pre id="raw-json" class="hidden"></pre>
+          </div>
+
+          <!-- Placeholder -->
+          <div id="placeholder" class="placeholder">
+            <div class="placeholder-icon">⚡</div>
+            <p>
+              Click <strong>Run Synthesis</strong> to compile the Verilog code
+            </p>
+            <p class="placeholder-sub">
+              Yosys runs entirely in your browser via WebAssembly
+            </p>
+          </div>
+        </section>
+      </main>
+
+      <!-- Footer -->
+      <footer class="footer">
+        <p>
+          Powered by <a href="https://yowasp.org" target="_blank">YoWASP</a> ·
+          GSoC PoC for
+          <a href="https://github.com/CircuitVerse/CircuitVerse" target="_blank"
+            >CircuitVerse</a
+          >
+          · Client-Side Verilog Synthesis
+        </p>
+      </footer>
+    </div>
+
+    <script type="module" src="main.js"></script>
+  </body>
+</html>
