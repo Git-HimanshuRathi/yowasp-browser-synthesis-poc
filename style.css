@@ -307,6 +307,43 @@ select:focus {
   overflow-y: auto;
 }
 
+/* ── Warning Panel ───────────────────────────────────────────── */
+
+.warning-panel {
+  margin: 12px 16px;
+  border-radius: var(--radius-sm);
+  border: 1px solid rgba(234, 179, 8, 0.35);
+  background: #fefce8;
+  overflow: hidden;
+}
+
+.warning-header {
+  padding: 8px 12px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: #a16207;
+  background: rgba(234, 179, 8, 0.08);
+  border-bottom: 1px solid rgba(234, 179, 8, 0.2);
+}
+
+#warning-list {
+  list-style: none;
+  padding: 10px 12px;
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+  color: #854d0e;
+  line-height: 1.7;
+}
+
+#warning-list li {
+  padding: 2px 0;
+}
+
+#warning-list li::before {
+  content: "• ";
+  color: #ca8a04;
+}
+
 /* ── Parsed Summary ──────────────────────────────────────────── */
 
 .parsed-summary {

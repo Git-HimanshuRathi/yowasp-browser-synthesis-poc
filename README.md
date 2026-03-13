@@ -4,109 +4,84 @@
 
 > **Proof of Concept** for [CircuitVerse](https://github.com/CircuitVerse/CircuitVerse) — _Project 7: Client-Side Verilog Synthesis_
 
-## What This Proves
+## Current Setup vs This PoC
 
-| Technical Risk                                    | How It's Validated                                  |
-| ------------------------------------------------- | --------------------------------------------------- |
-| Running Yosys (YoWASP) in the browser             | WASM binary loads and executes successfully         |
-| Executing inside a Web Worker without blocking UI | UI stays responsive during synthesis                |
-| Producing valid Yosys JSON output                 | `write_json` generates valid JSON netlist           |
-| Parsing that JSON in JavaScript                   | Parsed summary shows modules, cell types, and ports |
+### Current CircuitVerse (Server-Side Synthesis)
+
+```
+User writes Verilog in browser
+        ↓
+HTTP request sent to Rails server
+        ↓
+Server writes Verilog to temp file on disk
+        ↓
+Server spawns Yosys as a subprocess (Open3.popen3)
+        ↓
+Yosys (native binary) runs on the server
+        ↓
+JSON output → yosys2digitaljs converter (Ruby)
+        ↓
+Response sent back to browser
+```
+
+- Yosys runs **on the server** as a native Linux binary
+- Every synthesis requires a **network round-trip** HTTP request
+- Server handles **temp file I/O**, **process spawning**, and a **20-second timeout**
+- Each user consumes **server CPU and memory**
+- A Ruby `VerilogValidator` pre-validates syntax before calling Yosys
+- A Ruby `Converter` transforms Yosys JSON into DigitalJS format
+
+### This PoC (Client-Side Synthesis)
+
+```
+User writes Verilog in browser
+        ↓
+Main thread sends Verilog to Web Worker     ← main.js
+        ↓
+Web Worker runs YoWASP (Yosys via WASM)     ← synthesis-worker.js
+        ↓
+Yosys: read_verilog → hierarchy → proc → opt → write_json
+        ↓
+Worker sends JSON + warnings back to main thread
+        ↓
+Browser displays parsed netlist + warnings  ← main.js
+```
+
+- Yosys runs **entirely in the browser** via WebAssembly (YoWASP)
+- **Zero server dependency** — no HTTP requests, no server load
+- **Web Worker** keeps the UI responsive during synthesis
+- Warnings from Yosys stderr are parsed and displayed
+- No build step — pure vanilla JS with ES Modules
+
+### Comparison
+
+| Aspect | Current (Server-Side) | PoC (Client-Side) |
+|---|---|---|
+| **Where Yosys runs** | Server (native binary) | Browser (WebAssembly) |
+| **Network required** | Yes (HTTP per synthesis) | No (fully offline-capable) |
+| **Server load** | High (CPU + memory per user) | Zero |
+| **Latency** | Network round-trip + server queue | Instant (local execution) |
+| **Scalability** | Limited by server resources | Unlimited (each browser independent) |
+| **Yosys installation** | Required on server | None (WASM from CDN) |
+| **Offline support** | No | Yes (after initial WASM cache) |
+
 
 ## Architecture
 
 ```
-User clicks "Run Synthesis"
-        ↓
-Main thread sends Verilog to Worker   ← main.js
-        ↓
-Worker runs YoWASP (Yosys via WASM)   ← synthesis-worker.js
-        ↓
-Yosys generates JSON netlist
-        ↓
-Worker sends JSON back
-        ↓
-Browser displays parsed result        ← main.js
-```
-
-### Why a Web Worker?
-
-Yosys compilation can take several seconds for large circuits. Running YoWASP inside a Web Worker **prevents blocking the browser UI thread**, keeping the page fully responsive during synthesis. This is a critical architectural decision for the full CircuitVerse integration.
-
-### Yosys Command Flow
-
-We use a simplified flow (no full `synth`) to keep the output readable and prove the pipeline works:
-
-```
-read_verilog input.v    # Parse the Verilog source
-hierarchy -auto-top     # Auto-detect the top module
-proc                    # Convert processes to netlists
-opt                     # Basic optimizations
-write_json output.json  # Output Yosys JSON format
-```
-
-## How to Run
-
-1. **Clone the repository:**
-
-   ```bash
-   git clone https://github.com/Git-HimanshuRathi/yowasp-browser-synthesis-poc.git
-   cd yowasp-browser-synthesis-poc
-   ```
-
-2. **Start a local HTTP server** (required for ES Module Workers):
-
-   ```bash
-   python3 -m http.server 8080
-   ```
-
-3. **Open in browser:**
-
-   ```
-   http://localhost:8080
-   ```
-
-4. **Click "Run Synthesis"** and observe the output.
-
-> **Note:** The WASM binary (~17 MB) is fetched from jsDelivr CDN on first load. Subsequent runs use the browser cache and are much faster.
-
-## Example Output
-
-For the **Half Adder** circuit:
-
-```
-Module: half_adder
-
-Cells:
-$_XOR_ × 1
-$_AND_ × 1
-
-Ports:
-a        (input)
-b        (input)
-sum      (output)
-carry    (output)
-
-Synthesis completed in 2.35s
-```
-
-## Tech Stack
-
-- **YoWASP** — Yosys compiled to WebAssembly, loaded from CDN
-- **Web Workers** — Off-main-thread execution
-- **Vanilla JS/HTML/CSS** — No build step, no bundler, no framework
-- **ES Modules** — Native browser module system
-
-## Project Structure
-
-```
-├── index.html            # Main page with editor + output panel
-├── style.css             # UI styles
-├── main.js               # Main thread: UI logic, worker communication
-├── synthesis-worker.js   # Web Worker: loads YoWASP, runs Yosys
+├── index.html            # Page with Verilog editor + output panel
+├── style.css             # UI styles (CircuitVerse visual language)
+├── main.js               # Main thread: UI logic, worker communication, JSON parsing
+├── synthesis-worker.js   # Web Worker: loads YoWASP, runs Yosys, extracts warnings
 └── README.md
 ```
 
-## License
+### Yosys Command Pipeline
 
-MIT
+```
+read_verilog input.v    →  Parse the Verilog source
+hierarchy -auto-top     →  Auto-detect the top module
+proc                    →  Convert processes to netlists
+opt                     →  Basic optimizations
+write_json output.json  →  Output Yosys JSON netlist
+```

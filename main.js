@@ -56,6 +56,8 @@ const statusBar = document.getElementById("status-bar");
 const statusText = document.getElementById("status-text");
 const errorPanel = document.getElementById("error-panel");
 const errorMessage = document.getElementById("error-message");
+const warningPanel = document.getElementById("warning-panel");
+const warningList = document.getElementById("warning-list");
 const parsedSummary = document.getElementById("parsed-summary");
 const summaryContent = document.getElementById("summary-content");
 const rawJsonSection = document.getElementById("raw-json-section");
@@ -73,7 +75,7 @@ const worker = new Worker("synthesis-worker.js", { type: "module" });
 let synthesisStartTime = 0;
 
 worker.onmessage = function (event) {
-  const { type, json, message } = event.data;
+  const { type, json, warnings, message } = event.data;
 
   switch (type) {
     case "status":
@@ -81,7 +83,7 @@ worker.onmessage = function (event) {
       break;
 
     case "result":
-      onSynthesisResult(json);
+      onSynthesisResult(json, warnings || []);
       break;
 
     case "error":
@@ -140,7 +142,7 @@ function runSynthesis() {
   worker.postMessage({ type: "synthesize", verilog });
 }
 
-function onSynthesisResult(json) {
+function onSynthesisResult(json, warnings) {
   const elapsed = ((performance.now() - synthesisStartTime) / 1000).toFixed(2);
 
   hideAll();
@@ -150,6 +152,17 @@ function onSynthesisResult(json) {
   // Show timing
   timingBadge.textContent = `✓ ${elapsed}s`;
   timingBadge.classList.remove("hidden");
+
+  // Show warnings if any
+  if (warnings.length > 0) {
+    warningList.innerHTML = "";
+    for (const w of warnings) {
+      const li = document.createElement("li");
+      li.textContent = w;
+      warningList.appendChild(li);
+    }
+    warningPanel.classList.remove("hidden");
+  }
 
   // Show parsed summary
   renderParsedSummary(json);
@@ -176,6 +189,7 @@ function onSynthesisError(msg) {
 function hideAll() {
   statusBar.classList.add("hidden");
   errorPanel.classList.add("hidden");
+  warningPanel.classList.add("hidden");
   parsedSummary.classList.add("hidden");
   rawJsonSection.classList.add("hidden");
   timingBadge.classList.add("hidden");

@@ -101,6 +101,12 @@
             <pre id="error-message"></pre>
           </div>
 
+          <!-- Warning Display -->
+          <div id="warning-panel" class="warning-panel hidden">
+            <div class="warning-header">⚠ Warnings</div>
+            <ul id="warning-list"></ul>
+          </div>
+
           <!-- Parsed Summary -->
           <div id="parsed-summary" class="parsed-summary hidden">
             <h3>Parsed Summary</h3>
@@ -129,17 +135,6 @@
         </section>
       </main>
 
-      <!-- Footer -->
-      <footer class="footer">
-        <p>
-          Powered by <a href="https://yowasp.org" target="_blank">YoWASP</a> ·
-          GSoC PoC for
-          <a href="https://github.com/CircuitVerse/CircuitVerse" target="_blank"
-            >CircuitVerse</a
-          >
-          · Client-Side Verilog Synthesis
-        </p>
-      </footer>
     </div>
 
     <script type="module" src="main.js"></script>
