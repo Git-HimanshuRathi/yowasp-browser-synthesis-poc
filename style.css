@@ -450,6 +450,49 @@ select:focus {
   color: #92400e;
 }
 
+/* ── DigitalJS Summary ───────────────────────────────────────── */
+
+.digitaljs-summary {
+  padding: 16px;
+  border-top: 2px solid var(--primary-green);
+}
+
+.digitaljs-summary h3 {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--secondary-green);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.pipeline-badge {
+  font-size: 0.65rem;
+  font-weight: 500;
+  text-transform: none;
+  letter-spacing: 0;
+  padding: 2px 8px;
+  border-radius: 12px;
+  background: var(--light-green-bg);
+  color: var(--secondary-green);
+  border: 1px solid rgba(66, 185, 131, 0.3);
+}
+
+.digitaljs-block {
+  background: var(--light-green-bg);
+  border-color: rgba(66, 185, 131, 0.3);
+}
+
+.digitaljs-stat {
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+  color: var(--text-secondary);
+  padding: 2px 8px;
+}
+
 /* ── Raw JSON ────────────────────────────────────────────────── */
 
 .raw-json-section {

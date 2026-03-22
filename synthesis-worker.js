@@ -3,6 +3,11 @@ import {
   Exit,
 } from "https://cdn.jsdelivr.net/npm/@yowasp/yosys/gen/bundle.js";
 
+import {
+  yosys2digitaljs,
+  io_ui,
+} from "https://esm.sh/yosys2digitaljs@0.10.3/core";
+
 /**
  * Run Yosys synthesis on Verilog source code.
  *
@@ -15,7 +20,7 @@ import {
  * - `write_json` outputs the Yosys JSON netlist format
  *
  * @param {string} verilogSource - The Verilog source code
- * @returns {Promise<{json: object, warnings: string[]}>} Parsed JSON + warnings
+ * @returns {Promise<{yosysJson: object, digitaljsJson: object, warnings: string[]}>}
  */
 async function synthesize(verilogSource) {
   // Collect stderr lines for diagnostics
@@ -82,7 +87,12 @@ async function synthesize(verilogSource) {
   // Combine stderr warnings + analysis warnings (deduplicated)
   const warnings = [...new Set([...stderrWarnings, ...analysisWarnings])];
 
-  return { json, warnings };
+  // Convert Yosys JSON → DigitalJS JSON using the yosys2digitaljs npm package
+  // This is the same package that CircuitVerse's Ruby gem was ported from
+  const digitaljsJson = yosys2digitaljs(json);
+  io_ui(digitaljsJson);
+
+  return { yosysJson: json, digitaljsJson, warnings };
 }
 
 /**
@@ -169,9 +179,14 @@ self.onmessage = async function (event) {
     });
 
     self.postMessage({ type: "status", message: "Running Yosys synthesis…" });
-    const { json, warnings } = await synthesize(verilog);
+    const { yosysJson, digitaljsJson, warnings } = await synthesize(verilog);
 
-    self.postMessage({ type: "result", json, warnings });
+    self.postMessage({
+      type: "status",
+      message: "Converting Yosys JSON → DigitalJS format…",
+    });
+
+    self.postMessage({ type: "result", yosysJson, digitaljsJson, warnings });
   } catch (err) {
     self.postMessage({
       type: "error",

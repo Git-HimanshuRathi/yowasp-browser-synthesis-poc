@@ -39,7 +39,7 @@
           <div>
             <h1>YoWASP Browser Synthesis</h1>
             <p class="subtitle">
-              Verilog → WASM → Yosys JSON — entirely client-side
+              Verilog → YoWASP → Yosys JSON → yosys2digitaljs → DigitalJS JSON — entirely client-side
             </p>
           </div>
         </div>
@@ -113,13 +113,28 @@
             <div id="summary-content"></div>
           </div>
 
-          <!-- Raw JSON -->
+          <!-- Raw Yosys JSON -->
           <div id="raw-json-section" class="raw-json-section hidden">
             <h3>
               <span>Raw Yosys JSON</span>
               <button id="toggle-json" class="toggle-btn">Show</button>
             </h3>
             <pre id="raw-json" class="hidden"></pre>
+          </div>
+
+          <!-- DigitalJS Converted Output -->
+          <div id="digitaljs-section" class="digitaljs-summary hidden">
+            <h3>DigitalJS Output <span class="pipeline-badge">via yosys2digitaljs</span></h3>
+            <div id="digitaljs-summary-content"></div>
+          </div>
+
+          <!-- Raw DigitalJS JSON -->
+          <div id="digitaljs-json-section" class="raw-json-section hidden">
+            <h3>
+              <span>Raw DigitalJS JSON</span>
+              <button id="toggle-digitaljs" class="toggle-btn">Show</button>
+            </h3>
+            <pre id="digitaljs-json" class="hidden"></pre>
           </div>
 
           <!-- Placeholder -->
